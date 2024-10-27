@@ -25,10 +25,14 @@ from typing import Optional
 import requests
 import schedule
 
-root_dir = os.path.join(os.path.dirname(__file__),'..')
+# Define path-related constants
+ROOT_DIR = os.path.join(os.path.dirname(__file__), '..')
+CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
+LOG_DIR = os.path.join(ROOT_DIR, 'logs')
+DEFAULT_IMAGE_PATH = os.path.join(ROOT_DIR, 'dat', 'raw_images')
+
 # Load configuration
-config_path = os.path.join(root_dir, 'config.json')
-with open(config_path, 'r', encoding='utf-8') as config_file:
+with open(CONFIG_PATH, 'r', encoding='utf-8') as config_file:
     config = json.load(config_file)
 
 BASE_URL = config['BASE_URL']
@@ -37,18 +41,16 @@ BASE_URL = config['BASE_URL']
 parser = argparse.ArgumentParser(description='Download traffic images.')
 parser.add_argument('--image_path',
                     type=str,
-                    default=os.path.join(root_dir, 'dat','raw_images'),
+                    default=DEFAULT_IMAGE_PATH,
                     help='Path to save images')
 args = parser.parse_args()
 
 IMAGE_PATH = args.image_path
 
-
 # Configure logging
-log_dir = os.path.join(root_dir, 'logs')
-os.makedirs(log_dir, exist_ok=True)
+os.makedirs(LOG_DIR, exist_ok=True)
 logging.basicConfig(
-    filename=os.path.join(log_dir, 'traffic_image_downloader.log'),  # Log to a file
+    filename=os.path.join(LOG_DIR, 'traffic_image_downloader.log'),  # Log to a file
     filemode='a',  # Append to the file
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.INFO  # Change to logging.DEBUG for more detailed output
@@ -153,7 +155,6 @@ def run_downloader() -> None:
         latest_timestamp += timedelta(minutes=2)
 
 
-
 def start_downloads() -> None:
     """ 
     Start the image downloader and schedule it to run every 10 minutes. 
@@ -168,6 +169,7 @@ def start_downloads() -> None:
     while True:
         schedule.run_pending()
         time.sleep(30)
+
 
 if __name__ == "__main__":
     start_downloads()
