@@ -13,6 +13,9 @@ a timestamp, e.g., "traffic_202106010000.jpg".
 
 To run the script, you can simply execute the script in a terminal:
 `python data_injestion.py`
+
+To-do:
+- Since drivebc stores the last 24 hours of images, we can alter the script to download images from the last 24 hours
 """
 
 import os
@@ -36,7 +39,7 @@ with open(CONFIG_PATH, 'r', encoding='utf-8') as config_file:
     config = json.load(config_file)
 
 BASE_URL = config['BASE_URL']
-
+CAMERAS = config['CAMERAS']
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Download traffic images.')
 parser.add_argument('--image_path',
@@ -57,7 +60,7 @@ logging.basicConfig(
 )
 
 
-def download_image(timestamp: str, folder_path: str) -> None:
+def download_image(timestamp: str, folder_path: str, camera:str) -> None:
     """
     Downloads an image for the given timestamp and saves it to the specified folder path.
 
@@ -72,7 +75,7 @@ def download_image(timestamp: str, folder_path: str) -> None:
     -------
     None
     """
-    image_url = f"{BASE_URL}{timestamp}.jpg"
+    image_url = f"{BASE_URL}{camera}/{timestamp}.jpg"
     filename = os.path.join(folder_path, f"traffic_{timestamp}.jpg")
     try:
         response = requests.get(image_url, stream=True,
@@ -137,22 +140,24 @@ def run_downloader() -> None:
     None
     """
     folder_name = date.today().strftime("%Y-%m-%d")
-    folder_path = os.path.join(IMAGE_PATH, folder_name)
-    os.makedirs(folder_path, exist_ok=True)
+    folder_paths = [os.path.join(IMAGE_PATH, num, folder_name) for num in CAMERAS]
 
-    latest_timestamp = get_latest_image_timestamp(folder_path)
+    for folder_path, camera in zip(folder_paths,CAMERAS):
+        os.makedirs(folder_path, exist_ok=True)
 
-    if latest_timestamp is None:
-        latest_timestamp = datetime.now().replace(
-            hour=0, minute=0, second=0, microsecond=0)
-    else:
-        latest_timestamp += timedelta(minutes=2)
+        latest_timestamp = get_latest_image_timestamp(folder_path)
 
-    current_time = datetime.now()
-    while latest_timestamp <= current_time:
-        timestamp_str = latest_timestamp.strftime("%Y%m%d%H%M")
-        download_image(timestamp_str, folder_path)
-        latest_timestamp += timedelta(minutes=2)
+        if latest_timestamp is None:
+            latest_timestamp = datetime.now().replace(
+                hour=0, minute=0, second=0, microsecond=0)
+        else:
+            latest_timestamp += timedelta(minutes=2)
+
+        current_time = datetime.now()
+        while latest_timestamp <= current_time:
+            timestamp_str = latest_timestamp.strftime("%Y%m%d%H%M")
+            download_image(timestamp_str, folder_path,camera)
+            latest_timestamp += timedelta(minutes=2)
 
 
 def start_downloads() -> None:
