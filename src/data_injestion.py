@@ -29,7 +29,7 @@ import requests
 import schedule
 
 # Define path-related constants
-ROOT_DIR = os.path.join(os.path.dirname(__file__), '..')
+ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
 LOG_DIR = os.path.join(ROOT_DIR, 'logs')
 DEFAULT_IMAGE_PATH = os.path.join(ROOT_DIR, 'dat', 'raw_images')
