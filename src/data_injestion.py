@@ -15,7 +15,6 @@ To run the script, you can simply execute the script in a terminal:
 `python data_injestion.py`
 
 To-do:
-- Fix bug related to redownloading images for the day 
 - Consider parrellizing the download process across cameras
 """
 
@@ -180,8 +179,6 @@ def download_time_range(start_time: datetime,
         end_time = current_time
 
     start_timestamp = start_time.replace(second=0, microsecond=0)
-    start_timestamp = start_timestamp - \
-        timedelta(minutes=start_timestamp.minute % 2)
 
     while start_timestamp < end_time:
         timestamp_str = start_timestamp.strftime("%Y%m%d%H%M")
@@ -231,7 +228,7 @@ def run_downloader() -> None:
         end_times = [current_time]
         folder_paths = [folder_path1]
 
-        if latest_available_date < current_date:
+        if latest_date_folder < current_date:
             current_start_time = current_time.replace(
                 hour=0, minute=0, second=0, microsecond=0)
             start_times.append(current_start_time)
