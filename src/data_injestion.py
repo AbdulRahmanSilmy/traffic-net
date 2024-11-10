@@ -15,7 +15,7 @@ To run the script, you can simply execute the script in a terminal:
 `python data_injestion.py`
 
 To-do:
-- Increase period of time the run_downloader is scheduled to run
+- Fix bug related to redownloading images for the day 
 - Consider parrellizing the download process across cameras
 """
 
@@ -150,7 +150,10 @@ def get_latest_folder(camera_path: str):
     return max(date_folders) if date_folders else None
 
 
-def download_time_range(start_time: datetime, end_time: datetime, folder_path: str, camera: str) -> None:
+def download_time_range(start_time: datetime,
+                        end_time: datetime,
+                        folder_path: str,
+                        camera: str) -> None:
     """
     Downloads images for a specified time range.
 
@@ -251,10 +254,10 @@ def start_downloads() -> None:
     """
     run_downloader()
     # Schedule the task to run every 10 minutes
-    schedule.every(10).minutes.do(run_downloader)
+    schedule.every(6).hours.do(run_downloader)
     while True:
         schedule.run_pending()
-        time.sleep(30)
+        time.sleep(3600)
 
 
 if __name__ == "__main__":
