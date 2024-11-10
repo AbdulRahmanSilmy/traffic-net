@@ -15,13 +15,14 @@ To run the script, you can simply execute the script in a terminal:
 `python data_injestion.py`
 
 To-do:
-- Since drivebc stores the last 24 hours of images, we can alter the script to download images from the last 24 hours
+- Increase period of time the run_downloader is scheduled to run
+- Consider parrellizing the download process across cameras
 """
 
 import os
 import json
 import argparse
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import time
 import logging
 from typing import Optional
@@ -53,14 +54,15 @@ IMAGE_PATH = args.image_path
 # Configure logging
 os.makedirs(LOG_DIR, exist_ok=True)
 logging.basicConfig(
-    filename=os.path.join(LOG_DIR, 'traffic_image_downloader.log'),  # Log to a file
+    filename=os.path.join(
+        LOG_DIR, 'traffic_image_downloader.log'),  # Log to a file
     filemode='a',  # Append to the file
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.INFO  # Change to logging.DEBUG for more detailed output
 )
 
 
-def download_image(timestamp: str, folder_path: str, camera:str) -> None:
+def download_image(timestamp: str, folder_path: str, camera: str) -> None:
     """
     Downloads an image for the given timestamp and saves it to the specified folder path.
 
@@ -130,34 +132,113 @@ def get_latest_image_timestamp(folder_path: str) -> Optional[datetime]:
     return max(timestamps) if timestamps else None
 
 
-def run_downloader() -> None:
+def get_latest_folder(camera_path: str):
     """
-    Downloads images for the current date starting from the latest image timestamp
-    if available, or from midnight if no images are found.
+    Finds the latest date folder in the camera path, or returns None if no folders are found.
+
+    Parameters
+    ----------
+    camera_path : str
+        The path to the camera folder.
+
+    Returns
+    -------
+    str or None
+        The latest date folder if found, otherwise None.
+    """
+    date_folders = os.listdir(camera_path)
+    return max(date_folders) if date_folders else None
+
+
+def download_time_range(start_time: datetime, end_time: datetime, folder_path: str, camera: str) -> None:
+    """
+    Downloads images for a specified time range.
+
+    Parameters
+    ----------
+    start_time : datetime
+        The start time for the time range.
+    end_time : datetime
+        The end time for the time range.
+    folder_path : str
+        The path to the folder where the images will be saved.
+    camera : str
+        The camera number.
 
     Returns
     -------
     None
     """
-    folder_name = date.today().strftime("%Y-%m-%d")
-    folder_paths = [os.path.join(IMAGE_PATH, num, folder_name) for num in CAMERAS]
+    current_time = datetime.now()
+    if start_time > current_time:
+        logging.error("Start time is in the future.")
+        return
+    if end_time > current_time:
+        end_time = current_time
 
-    for folder_path, camera in zip(folder_paths,CAMERAS):
-        os.makedirs(folder_path, exist_ok=True)
+    start_timestamp = start_time.replace(second=0, microsecond=0)
+    start_timestamp = start_timestamp - \
+        timedelta(minutes=start_timestamp.minute % 2)
 
-        latest_timestamp = get_latest_image_timestamp(folder_path)
+    while start_timestamp < end_time:
+        timestamp_str = start_timestamp.strftime("%Y%m%d%H%M")
+        download_image(timestamp_str, folder_path, camera)
+        start_timestamp += timedelta(minutes=2)
 
-        if latest_timestamp is None:
-            latest_timestamp = datetime.now().replace(
-                hour=0, minute=0, second=0, microsecond=0)
+
+def run_downloader() -> None:
+    """
+    Downloads images for the latest available time range for each camera. 
+
+    Returns
+    -------
+    None
+    """
+    current_time = datetime.now()
+    current_date = current_time.strftime("%Y-%m-%d")
+    # Setting the latest available time to 1 day ago
+    # and round down to the nearest 2-minute interval
+    # because bc drive uploads images every 2 minutes
+    latest_available_time = current_time - timedelta(days=1)
+    latest_available_time = latest_available_time.replace(
+        second=0, microsecond=0)
+    latest_available_time = latest_available_time - \
+        timedelta(minutes=latest_available_time.minute % 2)
+    latest_available_date = latest_available_time.strftime("%Y-%m-%d")
+
+    camera_paths = [os.path.join(IMAGE_PATH, num) for num in CAMERAS]
+
+    for camera_path, camera in zip(camera_paths, CAMERAS):
+        os.makedirs(camera_path, exist_ok=True)
+
+        latest_date_folder = get_latest_folder(camera_path)
+        if (latest_date_folder is None) or (latest_date_folder < latest_available_date):
+            latest_date_folder = latest_available_date
+
+        folder_path1 = os.path.join(camera_path, latest_date_folder)
+        os.makedirs(folder_path1, exist_ok=True)
+        latest_timestamp = get_latest_image_timestamp(folder_path1)
+
+        if latest_timestamp is None or ((current_time - latest_timestamp) > timedelta(days=1)):
+            latest_timestamp = latest_available_time
         else:
             latest_timestamp += timedelta(minutes=2)
 
-        current_time = datetime.now()
-        while latest_timestamp <= current_time:
-            timestamp_str = latest_timestamp.strftime("%Y%m%d%H%M")
-            download_image(timestamp_str, folder_path,camera)
-            latest_timestamp += timedelta(minutes=2)
+        start_times = [latest_timestamp]
+        end_times = [current_time]
+        folder_paths = [folder_path1]
+
+        if latest_available_date < current_date:
+            current_start_time = current_time.replace(
+                hour=0, minute=0, second=0, microsecond=0)
+            start_times.append(current_start_time)
+            end_times = [current_start_time, current_time]
+            folder_path2 = os.path.join(camera_path, current_date)
+            os.makedirs(folder_path2, exist_ok=True)
+            folder_paths.append(folder_path2)
+
+        for start_time, end_time, folder_path in zip(start_times, end_times, folder_paths):
+            download_time_range(start_time, end_time, folder_path, camera)
 
 
 def start_downloads() -> None:
