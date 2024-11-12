@@ -1,4 +1,7 @@
 {
     "BASE_URL": "https://images.drivebc.ca/ReplayTheDay/archive/",
-    "CAMERAS": ["147","148","149","150"]
+    "CAMERAS": ["147","148","149","150"],
+    "PREPROCESS_JOB": -1,
+    "CROP_START":8,
+    "CROP_END":-19
 }
