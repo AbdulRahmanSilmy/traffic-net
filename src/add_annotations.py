@@ -1,18 +1,20 @@
 """
-CVAT is the data annotation tool used for labelling of images. Because
-the free version of it does not store images when exporting the annotated
-dataset. This results in having exported zip files containing only 
-labels. This script aids in data annotation process in two ways:
+CVAT is the data annotation tool used for labelling of images. The free version 
+of it does not store images when exporting the annotated dataset. This results 
+in having exported zip files containing only labels. 
+
+This script aids in data annotation process in two ways:
 1. Extracts the labels from the exported zip files and appends them to the 
     existing dataset. 
-2. Copies the relevant images from the annotate folder used to for annotation 
-    in cvat to the dataset folder.
+2. Copies the relevant images from the annotate folder to the dataset folder.
 
 The script is designed to be run after the annotation process is complete. 
 The images are to be stored in the folder structure as follows:
-     - dat/annotate/camera/date/
+    - `dat/annotate/camera/date/`
 The exported zip files are to be stored in the folder structure as follows:
-     - dat/annotate/process/ 
+    - `dat/annotate/process/`
+Once the zip file is processed, it is moved to the folder structure as follows:
+    - `dat/annotate/done/`
 
 To do:
 1. This scripts assumes the yolo dataset folder is already created. Make it
@@ -81,13 +83,25 @@ def transfer_files_to_dataset_folder(extacted_zip_path: str,
     transfer_files(src_image_path, dist_image_path, 'copy')
 
 
-def main():
+def main(root_dir: str = ROOT_DIR) -> None:
     """
     Main function to transfer files from the process folder to the dataset folder.
     Moves the processed zip files to the done folder.
+
+    The following folder structure is assumed:
+    
+    ```
+    root_dir
+    ├── dat
+    │   └── annotate
+    │       ├── process
+    │       ├── done
+    │       ├── yolo_data
+    │       └── camera_num
+    │           └── date
+    ```
     """
     # Define path-related constants
-    root_dir = os.path.dirname(os.path.dirname(__file__))
     annotation_path = os.path.join(root_dir, 'dat', 'annotate')
 
     process_path = os.path.join(annotation_path, 'process')
