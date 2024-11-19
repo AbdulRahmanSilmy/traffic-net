@@ -3,11 +3,11 @@ Train a YOLOv8n model and log the results to MLflow.
 
 You can run this script from the command line by executing the following command:
 ```
-python src/train_yolov8.py
+python src/train_ultralytics.py
 ```
 Or you can run this script from the Python interpreter by executing the following commands:
 ```
-from src.train_yolov8 import train
+from src.train_ultralytics import train
 train()
 ```
 """
@@ -18,7 +18,7 @@ from ultralytics import YOLO
 
 # Define path-related constants
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
-CONFIG_PATH = os.path.join(ROOT_DIR, 'configs', 'train_yolov8.json')
+CONFIG_PATH = os.path.join(ROOT_DIR, 'configs', 'train_yolov8n.json')
 
 with open(CONFIG_PATH, 'r', encoding='utf-8') as config_file:
     config = json.load(config_file)
