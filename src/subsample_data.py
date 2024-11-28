@@ -18,7 +18,8 @@ ROOT_PATH = os.path.dirname(SRC_PATH)
 
 def subsample_day(camera: str, day: str, sample_dur: str = '30min', seed: int = SEED):
     """
-    Subsampling images in a day for annotation. The subsampled images are saved in the annotate folder.
+    Subsampling images in a day for annotation. The subsampled images 
+    are saved in the annotate folder as follows:
     root/dat/processed_images/camera/day -> root/dat/annotate/camera/day
 
     Parameters
@@ -60,7 +61,8 @@ def subsample_day(camera: str, day: str, sample_dur: str = '30min', seed: int = 
         image = cv2.imread(path)
         cv2.imwrite(annotate_path, image)
 
-    print(f"Subsampling complete. {len(df_sample)} images saved in {annotate_folder}")
+    print("Subsampling complete") 
+    print(f"{len(df_sample)} images saved in {annotate_folder}")
 
 
 if __name__ == '__main__':
