@@ -26,6 +26,9 @@ with open(CONFIG_PATH, 'r', encoding='utf-8') as config_file:
 DATA_PATH = config['data_path']
 DATA_PATH = os.path.join(ROOT_DIR, DATA_PATH)
 
+SAVE_DIR = config['save_dir']
+SAVE_DIR = os.path.join(ROOT_DIR, SAVE_DIR)
+
 WEIGHTS_PATH = config['weights_path']
 TRAIN_KWARGS = config['train_kwargs']
 EXPERIMENT_NAME = config['experiment_name']
@@ -68,7 +71,7 @@ def train(data_path: str = DATA_PATH,
         model = YOLO(weights_path)
 
         # Train the model
-        model.train(data=data_path, **train_kwargs)
+        model.train(data=data_path, save_dir=SAVE_DIR, **train_kwargs)
 
         metrics = model.val(save=True)
 

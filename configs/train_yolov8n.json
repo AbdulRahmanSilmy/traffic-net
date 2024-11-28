@@ -1,9 +1,10 @@
 {
     "data_path": "dat/annotate/yolo_data/data.yaml",
+    "save_dir": "logs/models/yolov8n",
     "weights_path": "yolov8n.pt",
     "train_kwargs": {
         "imgsz": 288,
-        "epochs": 10,
+        "epochs": 100,
         "batch": 1,
         "device": "cpu",
         "single_cls": true
