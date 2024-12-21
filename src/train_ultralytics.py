@@ -28,6 +28,7 @@ DATA_PATH = os.path.join(ROOT_DIR, DATA_PATH)
 
 SAVE_DIR = config['save_dir']
 SAVE_DIR = os.path.join(ROOT_DIR, SAVE_DIR)
+os.makedirs(SAVE_DIR, exist_ok=True)
 
 WEIGHTS_PATH = config['weights_path']
 TRAIN_KWARGS = config['train_kwargs']
