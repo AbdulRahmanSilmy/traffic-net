@@ -17,8 +17,9 @@ RAW_IMAGE_PATH = os.path.join(ROOT_DIR, 'dat', 'raw_images')
 PROCESSED_IMAGE_PATH = os.path.join(ROOT_DIR, 'dat', 'processed_images')
 
 # Load configuration from config.json
-config_path = os.path.join(ROOT_DIR, 'config.json')
-with open(config_path, 'r', encoding='utf-8') as config_file:
+CONFIG_DIR = os.path.join(ROOT_DIR, 'configs')
+CONFIG_PATH = os.path.join(CONFIG_DIR, 'data_pipeline.json')
+with open(CONFIG_PATH, 'r', encoding='utf-8') as config_file:
     config = json.load(config_file)
 
 CROP_START = config.get('CROP_START')
