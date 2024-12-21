@@ -30,7 +30,8 @@ import schedule
 
 # Define path-related constants
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
-CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
+CONFIG_DIR = os.path.join(ROOT_DIR, 'configs')
+CONFIG_PATH = os.path.join(CONFIG_DIR, 'data_pipeline.json')
 LOG_DIR = os.path.join(ROOT_DIR, 'logs')
 DEFAULT_IMAGE_PATH = os.path.join(ROOT_DIR, 'dat', 'raw_images')
 
