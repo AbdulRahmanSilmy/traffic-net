@@ -28,8 +28,12 @@ from typing import Optional
 import requests
 import schedule
 
-# Define path-related constants
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+SRC_DIR = os.path.join(ROOT_DIR, 'src')
+sys.path.append(SRC_DIR)
+from data_pipeline.file_manager import get_latest_folder, get_latest_image_timestamp
+
+# Define path-related constants
 CONFIG_DIR = os.path.join(ROOT_DIR, 'configs')
 CONFIG_PATH = os.path.join(CONFIG_DIR, 'data_pipeline.json')
 LOG_DIR = os.path.join(ROOT_DIR, 'logs')
@@ -104,50 +108,6 @@ def download_image(timestamp: str, folder_path: str, camera: str) -> None:
     except IOError as e:
         logging.error(
             "IO error occurred while saving image for timestamp %s: %s", timestamp, e)
-
-
-def get_latest_image_timestamp(folder_path: str) -> Optional[datetime]:
-    """
-    Finds the latest image timestamp in the folder, or returns None if no images are found.
-
-    Parameters
-    ----------
-    folder_path : str
-        The path to the folder where the images are stored.
-
-    Returns
-    -------
-    datetime or None
-        The latest image timestamp if found, otherwise None.
-    """
-    timestamps = []
-    for filename in os.listdir(folder_path):
-        if filename.startswith("traffic_") and filename.endswith(".jpg"):
-            timestamp_str = filename[8:-4]  # Extract the timestamp part
-            try:
-                timestamp = datetime.strptime(timestamp_str, "%Y%m%d%H%M")
-                timestamps.append(timestamp)
-            except ValueError:
-                continue
-    return max(timestamps) if timestamps else None
-
-
-def get_latest_folder(camera_path: str):
-    """
-    Finds the latest date folder in the camera path, or returns None if no folders are found.
-
-    Parameters
-    ----------
-    camera_path : str
-        The path to the camera folder.
-
-    Returns
-    -------
-    str or None
-        The latest date folder if found, otherwise None.
-    """
-    date_folders = os.listdir(camera_path)
-    return max(date_folders) if date_folders else None
 
 
 def download_time_range(start_time: datetime,
