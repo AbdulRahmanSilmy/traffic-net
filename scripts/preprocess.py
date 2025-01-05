@@ -8,11 +8,18 @@ This script can contain all other prepocessing required for the images.
 """
 import os
 import json
+import sys
 import cv2 as cv
+from tqdm import tqdm
 from joblib import Parallel, delayed
 
-# Define path-related constants
+
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+SRC_DIR = os.path.join(ROOT_DIR, 'src')
+sys.path.append(SRC_DIR)
+from data_pipeline.file_manager import get_latest_folder
+
+# Define path-related constants
 RAW_IMAGE_PATH = os.path.join(ROOT_DIR, 'dat', 'raw_images')
 PROCESSED_IMAGE_PATH = os.path.join(ROOT_DIR, 'dat', 'processed_images')
 
@@ -68,7 +75,7 @@ def process_image(source_path, destination_path):
     cv.imwrite(destination_path, processed_image)
 
 
-def process_camera(source_path, destination_path):
+def process_camera(source_path: str, destination_path: str) -> None:
     """
     Process images in the source path and save the processed images to the destination path.
 
@@ -87,11 +94,18 @@ def process_camera(source_path, destination_path):
     # List all files in the source path
     camera_folders = os.listdir(source_path)
 
-    for camera_folder in camera_folders:
+    for camera_folder in tqdm(camera_folders,
+                              desc='Percentage of cameras processed'):
         raw_camera_path = os.path.join(source_path, camera_folder)
-        date_folders = os.listdir(raw_camera_path)
+        raw_date_folders = os.listdir(raw_camera_path)
+        processed_camera_path = os.path.join(destination_path, camera_folder)
+        latest_processed_date_folder = get_latest_folder(processed_camera_path)
 
-        for date_folder in date_folders:
+        run_date_folders = [
+            folder for folder in raw_date_folders if folder >= latest_processed_date_folder]
+
+        for date_folder in tqdm(run_date_folders,
+                                desc=f'Processing camera: {camera_folder}'):
             raw_date_path = os.path.join(raw_camera_path, date_folder)
             raw_image_files = os.listdir(raw_date_path)
 
@@ -108,6 +122,8 @@ def process_camera(source_path, destination_path):
                 delayed(process_image)(raw_image_path, processed_image_path)
                 for raw_image_path, processed_image_path in zip(raw_image_paths, processed_image_paths)
             )
+
+    print('Image processing completed.')
 
 
 def main():
