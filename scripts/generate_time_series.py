@@ -39,8 +39,6 @@ import json
 
 # Constants
 CAMERA = '147'
-COLUMNS = ['time', 'class', 'confidence', 'num_cars', 'incoming', 'outgoing']
-
 
 # Setting up the paths
 SRIPTS_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -52,7 +50,7 @@ CAMERA_DIR = os.path.join(ROOT_PATH, 'dat', 'processed_images', CAMERA)
 TABULAR_CSV_PATH = os.path.join(ROOT_PATH, 'dat', 'output', 'traffic_147_two_way.csv')
 RUN_DIR = os.path.join(ROOT_PATH, 'runs', 'detect')
 
-from detection.generate_time_series import generate_tabular_csv
+from detection.generate_time_series import generate_tabular_csv, COLUMNS
 
 # Loading config parameters
 with open(CONFIG_PATH, 'rb') as f:

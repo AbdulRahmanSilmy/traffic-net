@@ -13,7 +13,7 @@ from ultralytics import YOLO
 # Constants
 _TIME_COLUMN = 'time'
 _CAMERA_COLUMN = 'camera'
-
+COLUMNS = ['time', 'class', 'confidence', 'num_cars', 'incoming', 'outgoing']
 
 def _create_df_row(df, result, file):
     """Creates a row for the dataframe from the output of the YOLO model"""
@@ -88,10 +88,10 @@ def _get_old_df(tabular_csv_path, date_folders):
 
 def generate_tabular_csv(
     camera_dir: str,
-    columns: List[str],
     overwrite: bool,
     best_weights_path: str,
-    tabular_csv_path: str
+    tabular_csv_path: str,
+    columns: List[str] = COLUMNS
 ) -> None:
     """
     Generates a tabular csv from the images in a camera directory
