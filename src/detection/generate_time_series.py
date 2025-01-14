@@ -1,72 +1,18 @@
 """
-Script that generates a timeseries dataset for from traffic images.
-
-The images are expected to be in following directory structure:
-ROOT_PATH
-    |- dat
-        |- processed_images
-            |- camera_number
-                |- date_folder
-                    |- traffic_YYYYMMDDHHMM.jpg
-
-The script uses an object detection model to detect cars in the images and generates a tabular csv
-with the following columns:
-    - time: The time of the image
-    - class: The class of the detected object
-    - confidence: The confidence of the detection
-    - num_cars: The number of cars detected
-    - incoming: The number of cars incoming
-    - outgoing: The number of cars outgoing
-
-The tabular csv is saved in the following directory:
-ROOT_PATH
-    |- dat
-        |- output
-            |- traffic_<camera_number>_two_way.csv
-
-The script can be run from the command line using the following command:
-    python scripts/generate_timeseries.py 
-    --camera_dir <camera_dir> 
-    --columns <columns> 
-    --overwrite <overwrite> 
-    --best_weights_path <best_weights_path> 
-    --tabular_csv_path <tabular_csv_path>
+This module generates a tabular csv traffic data from the images in a camera directory
 """
-
 import os
 from typing import List
-import json
 from datetime import datetime
-import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from ultralytics import YOLO
 
+
 # Constants
-SEED = 53456
-CAMERA = '147'
-COLUMNS = ['time', 'class', 'confidence', 'num_cars', 'incoming', 'outgoing']
 _TIME_COLUMN = 'time'
 _CAMERA_COLUMN = 'camera'
-
-# Setting up the paths
-SRIPTS_PATH = os.path.dirname(os.path.abspath(__file__))
-ROOT_PATH = os.path.dirname(SRIPTS_PATH)
-CONFIG_PATH = os.path.join(ROOT_PATH, 'configs', 'generate_timeseries.json')
-PROCESSED_IMAGE_DIR = os.path.join(ROOT_PATH, 'dat', 'processed_images')
-CAMERA_DIR = os.path.join(PROCESSED_IMAGE_DIR, CAMERA)
-OUTPUT_FOLDER = os.path.join(ROOT_PATH, 'dat', 'output')
-TABULAR_CSV_PATH = os.path.join(OUTPUT_FOLDER, 'traffic_147_two_way.csv')
-RUN_DIR = os.path.join(ROOT_PATH, 'runs', 'detect')
-
-with open(CONFIG_PATH, 'rb') as f:
-    config = json.load(f)
-
-# Model paths
-BEST_WEIGHTS_PATH = os.path.join(
-    RUN_DIR, config['best_weights'], 'weights', 'best.pt')
-OVERWRITE = config['overwrite']
 
 
 def _create_df_row(df, result, file):
@@ -141,11 +87,11 @@ def _get_old_df(tabular_csv_path, date_folders):
 
 
 def generate_tabular_csv(
-    camera_dir: str = CAMERA_DIR,
-    columns: List[str] = COLUMNS,
-    overwrite: bool = OVERWRITE,
-    best_weights_path: str = BEST_WEIGHTS_PATH,
-    tabular_csv_path: str = TABULAR_CSV_PATH
+    camera_dir: str,
+    columns: List[str],
+    overwrite: bool,
+    best_weights_path: str,
+    tabular_csv_path: str
 ) -> None:
     """
     Generates a tabular csv from the images in a camera directory
@@ -179,29 +125,4 @@ def generate_tabular_csv(
         date_folders, columns, camera_dir, model)
     df = pd.concat([df, df_new], ignore_index=True)
 
-    df.to_csv(TABULAR_CSV_PATH, index=False)
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(
-        description="Generate a timeseries dataset from traffic images.")
-    parser.add_argument('--camera_dir', type=str, default=CAMERA_DIR,
-                        help='The directory containing the images from the camera')
-    parser.add_argument('--columns', type=str, nargs='+',
-                        default=COLUMNS, help='The columns of the tabular csv')
-    parser.add_argument('--overwrite', type=bool, default=OVERWRITE,
-                        help='Whether to overwrite the existing tabular csv')
-    parser.add_argument('--best_weights_path', type=str, default=BEST_WEIGHTS_PATH,
-                        help='The path to the best weights of the model')
-    parser.add_argument('--tabular_csv_path', type=str,
-                        default=TABULAR_CSV_PATH, help='The path to the tabular csv')
-    args = parser.parse_args()
-
-    generate_tabular_csv(
-        camera_dir=args.camera_dir,
-        columns=args.columns,
-        overwrite=args.overwrite,
-        best_weights_path=args.best_weights_path,
-        tabular_csv_path=args.tabular_csv_path
-    )
+    df.to_csv(tabular_csv_path, index=False)
