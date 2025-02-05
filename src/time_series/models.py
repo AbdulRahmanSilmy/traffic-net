@@ -4,6 +4,8 @@ This module contains custom time series models that can be used in the time seri
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.metrics import mean_squared_error
+from joblib import Parallel, delayed
+import pmdarima as pm
 
 
 class AverageModel(BaseEstimator, RegressorMixin):
@@ -126,3 +128,102 @@ class AverageModel(BaseEstimator, RegressorMixin):
                     [day_buffer[-self.m:], numeric_day])
 
         return forecast
+
+
+class PMDARIMAWrapper(BaseEstimator, RegressorMixin):
+    """
+    A wrapper for PMDARIMA's auto_arima model to fit and predict time series data with daily seasonality.
+    This wrapper fits a unique ARIMA model for each day of the week.
+
+    Parameters
+    ----------
+    seasonal : bool, optional (default=True)
+        Whether to fit a seasonal ARIMA model.
+    m : int, optional (default=48)
+        The number of periods in each season.
+    n_jobs : int, optional (default=1)
+        The number of jobs to run in parallel for model fitting.
+    
+    Attributes
+    ----------
+    seasonal : bool
+        Whether to fit a seasonal SARIMA model.
+    m : int
+        The number of periods in each season.
+    n_jobs : int
+        The number of jobs to run in parallel for model fitting.
+    model_dict : dict
+        A dictionary where keys are unique days and values are fitted SARIMA models.
+
+    Methods
+    -------
+    fit(X, y=None)
+        Fit the SARIMA models to the training data.
+    predict(X)
+        Predict the future values using the fitted SARIMA models.
+    """
+    def __init__(self, seasonal=True, m=48, n_jobs=1):
+        self.seasonal = seasonal
+        self.m = m
+        self.n_jobs = n_jobs
+        self.model_dict = {}
+    
+    def _train_day(self, day):
+        mask = self.train_days==day
+        y_day = self.train_numeric[mask]
+        model = pm.auto_arima(y_day, seasonal=self.seasonal, m=self.m)
+        return model
+
+
+    def fit(self, X, y=None):
+        """
+        Fit the SARIMA models to the training data.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            A 2D numpy array where the first column is the target variable and the second column is the day of the week.
+            The day of the week should be an integer between 0 and 6 where 0 is Monday and 6 is Sunday.
+
+        y : None
+            Ignored.
+
+        Returns
+        -------
+        self : PMDARIMAWrapper
+            The fitted PMDARIMAWrapper model.
+        """
+        self.train_numeric = X[:,0]
+        self.train_days = X[:,1]
+
+        unique_days = np.unique(self.train_days)
+
+        results = Parallel(n_jobs=self.n_jobs)(delayed(self._train_day)(day) for day in unique_days)
+
+        self.model_dict = {day: model for day, model in zip(unique_days, results)}
+
+        return self
+    
+    def predict(self, X):
+        """
+        Predict the future values using the fitted SARIMA models.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            A 2D numpy array where the first column is the target variable which is ignored
+            and the second column is the day of the week.
+            The day of the week should be an integer between 0 and 6 where 0 is Monday and 6 is Sunday. 
+        """
+        numeric = X[:,0]
+        y_pred = np.zeros(len(numeric))
+        days = X[:,1]
+        unique_days, counts = np.unique(days, return_counts=True)
+
+        for day, count in zip(unique_days, counts):
+            mask = days==day
+            count = int(count)
+            forecast = self.model_dict[day].predict(count)
+            y_pred[mask] = forecast
+        
+        return y_pred
