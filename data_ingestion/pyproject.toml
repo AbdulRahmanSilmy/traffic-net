@@ -1,0 +1,21 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "data_ingestion"
+version = "0.0.0"
+packages = [{ include = "data_ingestion", from = "data_ingestion" }] 
+description = "Contain all the code for data ingestion for the traffic-net project"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = ">=2.32.3"
+schedule = ">=1.2.2"
+tqdm = ">=4.67.1"
+opencv-python = ">=4.10.0.84"
+joblib = ">=1.4.2"
+common_utils = {path = "../common_utils", develop = true}
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.3.3"
