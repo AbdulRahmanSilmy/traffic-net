@@ -4,7 +4,7 @@ services:
   data_ingestion:
     build:
       context: .
-      dockerfile: Dockerfile.rpi  
+      dockerfile: data_ingestion/Dockerfile
     volumes:
       - ./dat:/app/dat         # Mount your local 'data' directory for downloaded files
       - ./logs:/app/logs         # Mount your local 'data' directory for downloaded files
