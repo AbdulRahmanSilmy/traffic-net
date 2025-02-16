@@ -1,7 +1,7 @@
 {
     "downloader_params": {
         "base_url": "https://images.drivebc.ca/ReplayTheDay/archive/",
-        "cameras": ["147"],
+        "cameras": ["147", "148", "149", "150"],
         "image_dir": "dat/raw_images/",
         "log_file": "logs/traffic_image_downloader.log"
     },
