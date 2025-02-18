@@ -110,7 +110,7 @@ class TrafficDataGenerator:
             row = self._create_df_row(result, file)
             self.df = pd.concat([self.df, row], ignore_index=True)
 
-    def _camera_images_to_tabular_csv(self, date_folders):
+    def _camera_images_to_tabular_csv(self, date_folders, start_image_files):
         """
         Converts the images in a camera directory to a tabular dataframe
 
@@ -118,10 +118,16 @@ class TrafficDataGenerator:
         -----------
         date_folders: List[str]
             The folders containing the images
+
+        start_image_files: List[str]
+            The starting image filenames per date_folder that needs to be converted to 
+            time series data.
+            The start image file name is formatted as `traffic_<YYYYMMDDHHMM>.jpg`.
         """
-        for date_folder in tqdm(date_folders):
+        for date_folder, start_image_file in tqdm(zip(date_folders, start_image_files), total=len(date_folders)):
             date_dir = os.path.join(self.camera_dir, date_folder)
             image_files = os.listdir(date_dir)
+            image_files = [file for file in image_files if file >= start_image_file]
             image_paths = [os.path.join(date_dir, file)
                            for file in image_files]
             if len(image_paths) == 0:
@@ -132,6 +138,26 @@ class TrafficDataGenerator:
         camera_num = os.path.basename(self.camera_dir)
         self.df[self._CAMERA_COLUMN] = camera_num
         self.df[self._TIME_COLUMN] = pd.to_datetime(self.df[self._TIME_COLUMN])
+
+    def _get_default_start_image_files(self, date_folders: List[str]) -> List[str]:
+        """
+        Gets the default start image files for the date folders
+        The default start image file name is `traffic_<date>0000.jpg`.
+
+        Parameters:
+        -----------
+        date_folders: List[str]
+            The folders containing the images
+
+        Returns:
+        --------
+        start_image_files: List[str]
+            The default start image files for the date folders
+        """
+        start_image_date = [date_str.replace('-', '') + '0000' for date_str in date_folders]
+        start_image_files = [f"traffic_{image_date}.jpg" for image_date in start_image_date]
+
+        return start_image_files
 
     def _get_old_df(self, date_folders: List[str]) -> List[str]:
         """
@@ -149,23 +175,38 @@ class TrafficDataGenerator:
 
         date_folders: List[str]
             The folders containing the images excluding the last date
+
+        start_image_files: List[str]
+            The starting image filenames per date_folder that needs to be converted to 
+            time series data.
+            The start image file name is formatted as `traffic_<YYYYMMDDHHMM>.jpg`.
         """
         df = pd.read_csv(self.tabular_csv_path)
         df[self._TIME_COLUMN] = pd.to_datetime(df[self._TIME_COLUMN])
-        min_date = df[self._TIME_COLUMN].max().date()
-        min_date_folder = min_date.strftime('%Y-%m-%d')
-        date_folders = [
-            date_folder for date_folder in date_folders if date_folder >= min_date_folder]
-        remove_mask = df[self._TIME_COLUMN].dt.date == min_date
-        df = df[~remove_mask]
-        return df, date_folders
+        start_datetime = df[self._TIME_COLUMN].max()
+        start_date = start_datetime.date()
+        start_date_folder = start_date.strftime('%Y-%m-%d')
+        latest_image_datetime = start_datetime.strftime('%Y%m%d%H%M')
+        latest_image_file = f"traffic_{latest_image_datetime}.jpg"
 
+        date_folders = [
+            date_folder for date_folder in date_folders if date_folder >= start_date_folder]
+        
+        start_image_files = self._get_default_start_image_files(date_folders)
+        start_image_files[0] = latest_image_file
+
+        df = df.iloc[:-1,:]
+
+        return df, date_folders, start_image_files
+    
     def generate_tabular_csv(self) -> None:
         """Generates a tabular csv from the images in a camera directory"""
+
         date_folders = os.listdir(self.camera_dir)
-
+        start_image_files = self._get_default_start_image_files(date_folders)
+        
         if not self.overwrite and os.path.exists(self.tabular_csv_path):
-            self.df, date_folders = self._get_old_df(date_folders)
-
-        self._camera_images_to_tabular_csv(date_folders)
+            self.df, date_folders, start_image_files = self._get_old_df(date_folders)
+            
+        self._camera_images_to_tabular_csv(date_folders, start_image_files)
         self.df.to_csv(self.tabular_csv_path, index=False)
