@@ -2,14 +2,14 @@
 This module contains the common utility functions for scheduling and running processes
 that are part of a pipeline.
 """
-from typing import Optional, List, Callable
+from typing import List, Callable
 import time
 import schedule
 
 
 def schedule_and_run_processes(
-        download_interval_hours: int, 
-        sleep_seconds: int, 
+        download_interval_hours: int,
+        sleep_seconds: int,
         list_process: List[Callable]) -> None:
     """
     Schedule and run processes sequentially in a pipeline.
@@ -29,7 +29,7 @@ def schedule_and_run_processes(
     def run_processes():
         for process in list_process:
             process()
-    
+
     run_processes()
     schedule.every(download_interval_hours).hours.do(run_processes)
     while True:

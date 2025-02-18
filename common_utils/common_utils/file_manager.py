@@ -9,6 +9,7 @@ from typing import Optional
 _PATH_SUFFIX = "_path"
 _DIR_SUFFIX = "_dir"
 
+
 def get_latest_image_timestamp(folder_path: str) -> Optional[datetime]:
     """
     Finds the latest image timestamp in the folder, or returns None if no images are found.
