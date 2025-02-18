@@ -27,4 +27,4 @@ WORKDIR /app/data_ingestion
 RUN poetry install --no-root
 
 # Run the script indefinitely
-CMD ["poetry", "run", "python", "data_ingestion/__main__.py"]
+CMD ["poetry", "run", "python", "-m", "data_ingestion"]

@@ -4,14 +4,16 @@ traffic images from the DriveBC website and preprocesses the images.
 
 All parameter values are read from a configuration file named `config.json`.
 """
-import os
+# Imports from standard library
 import json
+import os
 
+# Imports from project packages
 from common_utils.file_manager import update_relative_paths
 from common_utils.scheduler import schedule_and_run_processes
+from data_ingestion.downloader import TrafficImageDownloader
+from data_ingestion.preprocessor import ImagePreprocessor
 
-from downloader import TrafficImageDownloader
-from preprocessor import ImagePreprocessor
 
 # Define path-related constants
 DATA_INGESTION_DIR = os.path.dirname(os.path.dirname(__file__))

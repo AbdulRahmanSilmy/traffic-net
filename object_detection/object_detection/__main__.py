@@ -8,8 +8,7 @@ import os
 import json
 from common_utils.file_manager import update_relative_paths
 from common_utils.scheduler import schedule_and_run_processes
-from generate_time_series import TrafficDataGenerator
-
+from object_detection.generate_time_series import TrafficDataGenerator
 
 
 _DATA_GENERATOR_PARAMS_KEY = "traffic_data_generator"
@@ -30,11 +29,14 @@ def main():
     sleep_seconds = config['SLEEP_SECONDS']
 
     data_generator_params = config[_DATA_GENERATOR_PARAMS_KEY]
-    data_generator_params = update_relative_paths(data_generator_params, ROOT_DIR)
+    data_generator_params = update_relative_paths(
+        data_generator_params, ROOT_DIR)
     data_generator = TrafficDataGenerator(**data_generator_params)
 
     list_process = [data_generator.generate_tabular_csv]
-    schedule_and_run_processes(download_interval_hours, sleep_seconds, list_process)
+    schedule_and_run_processes(
+        download_interval_hours, sleep_seconds, list_process)
+
 
 if __name__ == "__main__":
     main()
