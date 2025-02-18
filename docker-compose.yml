@@ -6,8 +6,19 @@ services:
       context: .
       dockerfile: data_ingestion/Dockerfile
     volumes:
-      - ./dat:/app/dat         # Mount your local 'data' directory for downloaded files
-      - ./logs:/app/logs         # Mount your local 'data' directory for downloaded files
+      - ./dat:/app/dat     
+      - ./logs:/app/logs        
+    environment:
+      - TZ=America/Vancouver      # Set the timezone to 
+    restart: always               # Restart the container if it stops
+
+  object_detection:
+    build:
+      context: .
+      dockerfile: object_detection/Dockerfile
+    volumes:
+      - ./dat:/app/dat         
+      - ./runs:/app/runs       
     environment:
       - TZ=America/Vancouver      # Set the timezone to 
     restart: always               # Restart the container if it stops
