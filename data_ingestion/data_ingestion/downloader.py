@@ -43,7 +43,7 @@ class TrafficImageDownloader:
     base_url: str
         The base URL for the DriveBC website.
 
-    log_file: str
+    log_file_path: str
         The path to the log file for the downloader.
 
 
@@ -79,11 +79,11 @@ class TrafficImageDownloader:
             image_dir: str,
             cameras: List[str],
             base_url: str,
-            log_file: str):
+            log_file_path: str):
         self.image_dir = image_dir
         self.cameras = cameras
         self.base_url = base_url
-        self.log_file = log_file
+        self.log_file_path = log_file_path
         self._init_logging()
 
     def _init_logging(self):
@@ -91,10 +91,10 @@ class TrafficImageDownloader:
         Initialize logging for the downloader.
         """
         # Configure logging
-        log_dir = os.path.dirname(self.log_file)
+        log_dir = os.path.dirname(self.log_file_path)
         os.makedirs(log_dir, exist_ok=True)
         logging.basicConfig(
-            filename=self.log_file,  # Log to a file
+            filename=self.log_file_path,  # Log to a file
             filemode='a',  # Append to the file
             format='%(asctime)s - %(levelname)s - %(message)s',
             level=logging.INFO  # Change to logging.DEBUG for more detailed output
