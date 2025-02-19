@@ -21,3 +21,4 @@ common_utils = {path = "../common_utils", develop = true}
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0.0"
 mlflow = ">=2.0.0"
+ipykernel = ">=6.0.0"
