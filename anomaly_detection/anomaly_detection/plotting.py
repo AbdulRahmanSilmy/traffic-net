@@ -123,10 +123,16 @@ class BaseForecastPlotter(ABC):
                                        self.s_day:start + (j + 1) * self.s_day]
                 day_forecast = forecast[start + j *
                                         self.s_day:start + (j + 1) * self.s_day]
-                mask = ~np.isnan(day_true)
-                mse = mean_squared_error(day_true[mask], day_forecast[mask])
+                is_forecast_absent = np.isnan(day_forecast).all()
+                if is_forecast_absent:
+                    mse_text = "mse: N/A"
+                else:
+                    mask = ~np.isnan(day_true)
+                    mse = mean_squared_error(day_true[mask], day_forecast[mask])
+                    mse_text = f"mse: {mse:.1f}"
+            
                 annotation_x = start + (j + 0.5) * self.s_day
-                ax.annotate(f"mse: {mse:.1f}",
+                ax.annotate(mse_text,
                             xy=(annotation_x, max_val),
                             xytext=(annotation_x, max_val),
                             fontsize=10,
