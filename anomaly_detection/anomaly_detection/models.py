@@ -3,6 +3,7 @@ This module contains custom time series models that can be used in the time seri
 """
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.utils.validation import check_is_fitted
 from sklearn.metrics import mean_squared_error
 from joblib import Parallel, delayed
 import pmdarima as pm
@@ -91,6 +92,8 @@ class AverageModel(BaseEstimator, RegressorMixin):
 
         self.buffers = {day: self._extract_window_days(
             X_numeric, X_days, day) for day in unique_days}
+        
+        self._is_fitted = True
 
         return self
 
@@ -110,6 +113,7 @@ class AverageModel(BaseEstimator, RegressorMixin):
         forecast : np.ndarray
             A 1D numpy array of shape (num_samples,) containing the predicted values.
         """
+        check_is_fitted(self)
         numeric = X[:, 0].reshape(-1, self.m)
         day_of_week = X[:, 1].reshape(-1, self.m)
 
@@ -128,6 +132,12 @@ class AverageModel(BaseEstimator, RegressorMixin):
                     [day_buffer[-self.m:], numeric_day])
 
         return forecast
+    
+    def __sklearn_is_fitted__(self):
+        """
+        Check fitted status and return a Boolean value.
+        """
+        return hasattr(self, "_is_fitted") and self._is_fitted
 
 
 class PMDARIMAWrapper(BaseEstimator, RegressorMixin):
