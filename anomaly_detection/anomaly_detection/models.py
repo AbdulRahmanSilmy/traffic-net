@@ -1,13 +1,20 @@
 """
 This module contains custom time series models that can be used in the time series pipeline.
 """
+import copy
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 from sklearn.metrics import mean_squared_error
 from joblib import Parallel, delayed
 import pmdarima as pm
 
+
+class ResettablePipeline(Pipeline):
+    def reset(self):
+        """Reinitialize all steps in the pipeline."""
+        self.steps = [(name, est.reset()) for name, est in self.steps]
 
 class AverageModel(BaseEstimator, RegressorMixin):
     """
@@ -90,8 +97,10 @@ class AverageModel(BaseEstimator, RegressorMixin):
 
         unique_days = np.unique(X_days)
 
-        self.buffers = {day: self._extract_window_days(
+        self._buffers = {day: self._extract_window_days(
             X_numeric, X_days, day) for day in unique_days}
+        
+        self.buffers = copy.deepcopy(self._buffers)
         
         self._is_fitted = True
 
@@ -138,6 +147,16 @@ class AverageModel(BaseEstimator, RegressorMixin):
         Check fitted status and return a Boolean value.
         """
         return hasattr(self, "_is_fitted") and self._is_fitted
+    
+    def reset(self):
+        """
+        Reset the model by copying the initial buffers.
+        """
+        check_is_fitted(self)
+        self.buffers = copy.deepcopy(self._buffers)
+
+        return self
+
 
 
 class PMDARIMAWrapper(BaseEstimator, RegressorMixin):

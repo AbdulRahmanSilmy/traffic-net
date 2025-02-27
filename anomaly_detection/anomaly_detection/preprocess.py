@@ -1,9 +1,10 @@
 """
 This module contains functions to preprocess the time series data before fitting the models.
 """
+import copy
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-
+from sklearn.utils.validation import check_is_fitted
 
 class ImputeVals(BaseEstimator, TransformerMixin):
     """
@@ -24,6 +25,21 @@ class ImputeVals(BaseEstimator, TransformerMixin):
     def __init__(self, m=48):
         self.m = m
         self.avg_day_of_week = None
+
+    def __sklearn_is_fitted__(self):
+        """
+        Check fitted status and return a Boolean value.
+        """
+        return hasattr(self, "_is_fitted") and self._is_fitted
+
+    def reset(self):
+        """
+        Reset the imputer by copying the initial average values.
+        """
+        check_is_fitted(self)
+        self.avg_day_of_week = self._avg_day_of_week
+
+        return self
 
     def fit(self, X, y=None):
         """
@@ -59,7 +75,9 @@ class ImputeVals(BaseEstimator, TransformerMixin):
             X_week_day_ma = np.ma.array(X_week_day, mask=np.isnan(X_week_day))
             avg_day_of_week[i, :] = np.ma.average(X_week_day_ma, axis=0).data
 
-        self.avg_day_of_week = avg_day_of_week
+        self._avg_day_of_week = avg_day_of_week
+        self.avg_day_of_week = copy.deepcopy(avg_day_of_week)
+        self._is_fitted = True
 
         return self
 
@@ -84,7 +102,7 @@ class ImputeVals(BaseEstimator, TransformerMixin):
             and the second column is the day of the week. The day of the week ranges from [0,6] 
             representing days Monday to Sunday. 
         """
-
+        check_is_fitted(self)
         X = np.copy(X)
         X_numeric = X[:, 0].reshape(-1, self.m)
         X_day_of_week = X[:, 1].reshape(-1, self.m)
