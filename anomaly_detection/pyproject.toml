@@ -17,6 +17,9 @@ scikit-learn = ">=0.24.0"
 pmdarima = ">=1.0.0"
 joblib = ">=1.0.0"
 tqdm = ">=4.0.0"
+narwhals = ">=1.28.0"
+nbformat = ">=4.2.0"
+plotly = ">=6.0.0"
 common_utils = {path = "../common_utils", develop = true}
 
 [tool.poetry.group.dev.dependencies]
