@@ -7,6 +7,7 @@ This project aims to detect anomaly traffic patterns across the William R. Benne
 </p>
 <p align="center"><em>Arial view of the William R. Bennett Bridge</em></p>
 
+Note: A static site of the traffic analysis can be found [here](https://abdulrahmansilmy.github.io/traffic-net/). Real-time rendering of traffic analysis is coming soon!
 
 ## Running the pipeline
 
