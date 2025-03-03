@@ -1,0 +1,14 @@
+{
+    "anomaly_detection_params":{
+        "min_samples_per_day": 350,
+        "sample_period": "30min",
+        "max_mse": 30,
+        "average_model_path": "dat/model/time_series_model/average_model.pkl",
+        "plot_csv_path": "dat/output/plot_traffic_147.csv",
+        "temp_config_path": "dat/temp/anomaly_temp_config.json",
+        "previous_date": "2024-12-20 23:59:59",
+        "tabular_csv_path": "dat/output/traffic_147_two_way.csv"
+    },
+    "DOWNLOAD_INTERVAL_HOURS": 24,
+    "SLEEP_SECONDS": 3600
+}

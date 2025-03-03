@@ -22,3 +22,13 @@ services:
     environment:
       - TZ=America/Vancouver      # Set the timezone to 
     restart: always               # Restart the container if it stops
+
+  anomaly_detection:
+    build:
+      context: .
+      dockerfile: anomaly_detection/Dockerfile
+    volumes:
+      - ./dat:/app/dat         
+    environment:
+      - TZ=America/Vancouver      # Set the timezone to 
+    restart: always               # Restart the container if it stops
