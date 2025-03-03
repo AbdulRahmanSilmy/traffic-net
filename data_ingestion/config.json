@@ -1,0 +1,18 @@
+{
+    "downloader_params": {
+        "base_url": "https://images.drivebc.ca/ReplayTheDay/archive/",
+        "cameras": ["147", "148", "149", "150"],
+        "image_dir": "dat/raw_images/",
+        "log_file_path": "logs/traffic_image_downloader.log"
+    },
+    "preprocessor_params": {
+        "source_dir": "dat/raw_images/",
+        "destination_dir": "dat/processed_images/",
+        "cameras": ["147"],
+        "vertical_crop_start": 8,
+        "vertical_crop_end": -19,
+        "n_jobs": -1
+    },
+    "DOWNLOAD_INTERVAL_HOURS": 6,
+    "SLEEP_SECONDS": 3600
+}

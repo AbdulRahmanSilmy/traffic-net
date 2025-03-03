@@ -1,0 +1,24 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "object_detection"
+version = "0.0.0"
+packages = [{ include = "object_detection"}] 
+description = "Contain all the code for object detection for the traffic-net project where a series of images are processed to time series data"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+schedule = ">=1.2.2"
+numpy = ">=2.0.0"
+opencv-python = ">=4.0.0.0"
+joblib = ">=1.0.0"
+tqdm = ">=4.0.0"
+ultralytics = ">=8.0.*"
+common_utils = {path = "../common_utils", develop = true}
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0.0"
+mlflow = ">=2.0.0"
+ipykernel = ">=6.0.0"

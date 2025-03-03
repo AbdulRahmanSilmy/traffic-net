@@ -1,0 +1,10 @@
+{
+    "traffic_data_generator":{
+        "camera_dir": "dat/processed_images/147",
+        "best_weights_path": "runs/detect/train15/weights/best.pt",
+        "tabular_csv_path": "dat/output/traffic_147_two_way.csv",
+        "overwrite": false
+    },
+    "DOWNLOAD_INTERVAL_HOURS": 6,
+    "SLEEP_SECONDS": 3600
+}

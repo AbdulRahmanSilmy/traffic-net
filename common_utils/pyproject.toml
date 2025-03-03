@@ -1,0 +1,14 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "common_utils"
+version = "0.0.0"
+description = "Contains common utility functions for the traffic-net project"
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+schedule = ">=1.2.2"
+
+
