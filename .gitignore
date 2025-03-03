@@ -2,3 +2,7 @@
 /logs
 /configs
 traffic-net.code-workspace
+*egg-info
+*.lock
+**/runs
+**/__pycache__/
