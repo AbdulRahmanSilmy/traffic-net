@@ -5,7 +5,7 @@ consists of the following processes:
     2. TemporalAggregation: Temporally aggregate the data
     3. TimeSeriesForecast: Forecast the number of cars using a rolling average model
     4. AnomalyDetection: Detect anomalies in the forecasted data
-    5. PlotCSVHandler: Write the plot csv file
+    5. PlotCSVHandler: Write the plot csv file and upload it to Google Cloud Storage
 
 The pipeline is started from the previous date stored in the temporary configuration file.
 The pipeline is run until the most recent complete day. The entire pipeline can be run 
@@ -22,6 +22,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
+from google.cloud import storage
 
 _TEMPORAL_AGGREGATION_COLUMNS = ['num_cars', 'incoming', 'outgoing']
 
@@ -354,22 +355,87 @@ class AnomalyDetection(PipelineProcess):
 
 class PlotCSVHandler(PipelineProcess):
     """
-    Writing the plot csv file
+    Writing the plot csv file and uploading it to Google Cloud Storage
+
+    Parameters
+    ----------
+    plot_csv_path : str
+        Path to save the plot csv file
+
+    service_account_path : str
+        Path to the Google Cloud service account file this is used to authenticate
+        the Google Cloud Storage
+
+    bucket_name : str
+        Name of the Google Cloud Storage bucket
+
+    object_name : str
+        Name of the object in the Google Cloud Storage bucket
     """
 
-    def __init__(self, plot_csv_path):
+    def __init__(self,
+                 plot_csv_path,
+                 service_account_path,
+                 bucket_name,
+                 object_name):
         self.plot_csv_path = plot_csv_path
+        self.service_account_path = service_account_path
+        self.bucket_name = bucket_name
+        self.object_name = object_name
+
+    def _write_local_csv(self, df_agg):
+        """
+        Write the plot csv file
+
+        Parameters
+        ----------
+        df_agg : pd.DataFrame
+            A DataFrame of the aggregated data
+        """
+
+        if os.path.exists(self.plot_csv_path):
+            df_old = pd.read_csv(self.plot_csv_path, index_col='time')
+            df_old.index = pd.to_datetime(df_old.index)
+            df_new = pd.concat([df_old, df_agg])
+            df_new.to_csv(self.plot_csv_path, index=True)
+        else:
+            df_agg.to_csv(self.plot_csv_path, index=True)
+
+    def _get_blob_object(self):
+        """
+        Get the blob object from Google Cloud Storage
+        """
+
+        client = storage.Client.from_service_account_json(
+            self.service_account_path)
+        bucket = client.bucket(self.bucket_name)
+        blob = bucket.blob(self.object_name)
+
+        return blob
+
+    def _upload_csv_to_gcs(self):
+        """
+        Upload the plot csv file to Google Cloud Storage
+        """
+
+        blob = self._get_blob_object()
+        blob.upload_from_filename(self.plot_csv_path)
 
     def reset(self):
         """
-        Delete the plot csv file if it exists
+        Delete the plot csv file locally and in Google Cloud Storage
+        if it exists. 
         """
         if os.path.exists(self.plot_csv_path):
             os.remove(self.plot_csv_path)
 
+        blob = self._get_blob_object()
+        if blob.exists():
+            blob.delete()
+
     def run(self, **kwargs) -> dict:
         """
-        Write the plot csv file
+        Write the plot csv file and upload it to Google Cloud Storage
 
         Parameters
         ----------
@@ -386,13 +452,8 @@ class PlotCSVHandler(PipelineProcess):
         """
         df_agg = self.get_kwarg('df_agg', kwargs)
 
-        if os.path.exists(self.plot_csv_path):
-            df_old = pd.read_csv(self.plot_csv_path, index_col='time')
-            df_old.index = pd.to_datetime(df_old.index)
-            df_new = pd.concat([df_old, df_agg])
-            df_new.to_csv(self.plot_csv_path, index=True)
-        else:
-            df_agg.to_csv(self.plot_csv_path, index=True)
+        self._write_local_csv(df_agg)
+        self._upload_csv_to_gcs()
 
         return kwargs
 
@@ -410,7 +471,7 @@ class AnomalyDetectionPipeline():
         2. TemporalAggregation: Temporally aggregate the data
         3. TimeSeriesForecast: Forecast the number of cars using a rolling average model
         4. AnomalyDetection: Detect anomalies in the forecasted data
-        5. PlotCSVHandler: Write the plot csv file
+        5. PlotCSVHandler: Write the plot csv file and upload it to Google Cloud Storage
 
     Parameters
     ----------
@@ -438,6 +499,16 @@ class AnomalyDetectionPipeline():
 
     tabular_csv_path : str
         Path to the tabular csv file
+
+    service_account_path : str
+        Path to the Google Cloud service account file this is used to authenticate
+        the Google Cloud Storage
+
+    bucket_name: str
+        Name of the Google Cloud Storage bucket
+
+    object_name: str
+        Name of the object in the Google Cloud Storage bucket
     """
 
     def __init__(self,
@@ -448,22 +519,23 @@ class AnomalyDetectionPipeline():
                  plot_csv_path,
                  temp_config_path,
                  previous_date,
-                 tabular_csv_path):
+                 tabular_csv_path,
+                 service_account_path,
+                 bucket_name,
+                 object_name):
 
-        self.min_samples_per_day = min_samples_per_day
-        self.sample_period = sample_period
-        self.max_mse = max_mse
-        self.average_model_path = average_model_path
-        self.plot_csv_path = plot_csv_path
         self.temp_config_path = temp_config_path
         self.previous_date = previous_date
         self.tabular_csv_path = tabular_csv_path
         self.processes = [
-            MinSamplesPerDay(self.min_samples_per_day),
-            TemporalAggregation(self.sample_period),
-            TimeSeriesForecast(self.average_model_path),
-            AnomalyDetection(self.max_mse),
-            PlotCSVHandler(self.plot_csv_path)
+            MinSamplesPerDay(min_samples_per_day),
+            TemporalAggregation(sample_period),
+            TimeSeriesForecast(average_model_path),
+            AnomalyDetection(max_mse),
+            PlotCSVHandler(plot_csv_path,
+                           service_account_path,
+                           bucket_name,
+                           object_name)
         ]
 
     def _load_temp_config(self):

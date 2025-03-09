@@ -7,7 +7,10 @@
         "plot_csv_path": "dat/output/plot_traffic_147.csv",
         "temp_config_path": "dat/temp/anomaly_temp_config.json",
         "previous_date": "2024-12-20 23:59:59",
-        "tabular_csv_path": "dat/output/traffic_147_two_way.csv"
+        "tabular_csv_path": "dat/output/traffic_147_two_way.csv",
+        "service_account_path": "anomaly_detection/service_account_file.json",
+        "bucket_name": "traffic_net",
+        "object_name": "traffic_147_two_way.csv"
     },
     "DOWNLOAD_INTERVAL_HOURS": 24,
     "SLEEP_SECONDS": 3600
