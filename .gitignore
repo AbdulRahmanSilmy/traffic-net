@@ -6,3 +6,4 @@ traffic-net.code-workspace
 **/runs
 **/__pycache__/
 service_account_file.json
+secrets.toml
