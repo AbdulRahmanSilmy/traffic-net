@@ -1,2 +1,5 @@
 gcsfs==2025.3.0
 st-files-connection
+plotly>=6.0.0
+pandas>=2.0.0
+streamlit-autorefresh
