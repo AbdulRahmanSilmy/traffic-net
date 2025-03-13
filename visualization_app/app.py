@@ -1,19 +1,31 @@
+"""
+This script creates a Streamlit app that visualizes the traffic data of the William R. Bennett Bridge. 
+The pipeline described in the main README uploads the traffic data to Google Cloud Storage (GCS). 
+The app reads the data from a CSV file stored in Google Cloud Storage (GCS) and displays it using Plotly. 
+"""
+
+from datetime import timedelta
 import pandas as pd
 import plotly.graph_objects as go
-from datetime import timedelta
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from st_files_connection import FilesConnection
 
+# GCS connection details
+BUCKET_NAME = "traffic_net"
+OBJECT_NAME = "plot_traffic_147.csv"
+FILE_FORMAT = "csv"
+
+# Autorefresh every 24 hours (in milliseconds)
+REFRESH_INTERVAL = 86400 * 1000  
+
 st.set_page_config(page_title="Traffic Analysis", layout="wide")
+st_autorefresh(interval=REFRESH_INTERVAL, key="data_refresh")
 
-
-st_autorefresh(interval=86400 * 1000, key="data_refresh")
 # Load data
-
 conn = st.connection('gcs', type=FilesConnection)
-df_plot = conn.read("traffic_net/traffic_147_two_way.csv",
-                    input_format="csv", ttl=600)
+df_plot = conn.read(f"{BUCKET_NAME}/{OBJECT_NAME}",
+                    input_format=FILE_FORMAT, ttl=600)
 df_plot.set_index('time', inplace=True)
 df_plot.index = pd.to_datetime(df_plot.index)
 

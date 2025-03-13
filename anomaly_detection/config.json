@@ -10,7 +10,7 @@
         "tabular_csv_path": "dat/output/traffic_147_two_way.csv",
         "service_account_path": "anomaly_detection/service_account_file.json",
         "bucket_name": "traffic_net",
-        "object_name": "traffic_147_two_way.csv"
+        "object_name": "plot_traffic_147.csv"
     },
     "DOWNLOAD_INTERVAL_HOURS": 24,
     "SLEEP_SECONDS": 3600
