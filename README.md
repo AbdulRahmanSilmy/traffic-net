@@ -7,7 +7,7 @@ This project aims to detect anomaly traffic patterns across the William R. Benne
 </p>
 <p align="center"><em>Arial view of the William R. Bennett Bridge</em></p>
 
-Note: A static site of the traffic analysis can be found [here](https://abdulrahmansilmy.github.io/traffic-net/). Real-time rendering of traffic analysis is coming soon!
+Note: A preliminary live render of the traffic analysis is available [here](https://traffic-net.streamlit.app/). A more detailed, real-time version is coming soon!
 
 ## Running the pipeline
 
@@ -23,8 +23,9 @@ The pipeline has three main components:
 1. [Data ingestion](/data_ingestion)
 2. [Object detection](/object_detection) 
 3. [Anomaly detection](/anomaly_detection/) 
+4. [Visualization](/visualization_app/)
 
-Each component is run seperately using docker containers. 
+Stages 1, 2, and 3 serve as the backend and run locally within Docker containers, while the Visualization component acts as the frontend, operating online using Streamlit. Google Cloud Storage serves as the communication bridge between the locally run backend and the Streamlit frontend.
 
 ## [Data ingestion](/data_ingestion/)
 
@@ -49,14 +50,25 @@ The object detection generates raw time series data relating to traffic flow. It
 
 ## [Anomaly detection](/anomaly_detection/) (In progress)
 
-This is the last component of the pipeline. Here anomaly events in traffic are flagged by comparing forecasted traffic with the actual traffic data. 
+Here anomaly events in traffic are flagged by comparing forecasted traffic with the actual traffic data. 
 The following steps are carried out in this component:
 - Temporally aggregate time series data to reveal trends
 - Forecast future traffic trends using a rolling average model 
 - Compare the real and forecasted trends to flag anomalies (coming soon!)
-- Display live trends (coming soon!)
+
+## [Visualization](/visualization_app/) (In progress)
+
+This is the stage serves as the front-end of the project. The following are displayed:
+- Display real-time trends (coming soon!)
+- Display flagged anomalies (coming soon!)
+
+Note: A preliminary live render of the traffic analysis site is available [here](https://traffic-net.streamlit.app/).
 
 <p align="center">
     <img src="images/time_series_plot.png" alt="description" width="1300"/>
 </p>
 <p align="center"><em>Time series plot of traffic data</em></p>
+
+## Next-Steps
+- Make pipeline run in real-time 
+- Display more traffic analysis in live visualization site 
