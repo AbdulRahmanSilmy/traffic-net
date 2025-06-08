@@ -1,0 +1,48 @@
+{
+    "data_ingestion":
+        {
+            "downloader_params": {
+                "base_url": "https://images.drivebc.ca/ReplayTheDay/archive/",
+                "cameras": ["147", "148", "149", "150"],
+                "image_dir": "dat/raw_images/",
+                "log_file_path": "logs/traffic_image_downloader.log"
+            },
+            "preprocessor_params": {
+                "source_dir": "dat/raw_images/",
+                "destination_dir": "dat/processed_images/",
+                "cameras": ["147"],
+                "vertical_crop_start": 8,
+                "vertical_crop_end": -19,
+                "n_jobs": -1
+            }
+        },
+    
+    "object_detection":
+        {
+            "traffic_data_generator":{
+                "camera_dir": "dat/processed_images/147",
+                "best_weights_path": "runs/detect/train15/weights/best.pt",
+                "tabular_csv_path": "dat/output/traffic_147_two_way.csv",
+                "overwrite": false
+            }
+        },
+    
+    "anomaly_detection":
+        {
+            "anomaly_detection_params": {
+                "min_samples_per_day": 350,
+                "sample_period": "30min",
+                "max_mse": 30,
+                "average_model_path": "dat/model/time_series_model/average_model.pkl",
+                "plot_csv_path": "dat/output/plot_traffic_147.csv",
+                "temp_config_path": "dat/temp/anomaly_temp_config.json",
+                "previous_date": "2024-12-20 23:59:59",
+                "tabular_csv_path": "dat/output/traffic_147_two_way.csv",
+                "service_account_path": "anomaly_detection/service_account_file.json",
+                "bucket_name": "traffic_net",
+                "object_name": "plot_traffic_147.csv"
+            }
+        },
+    "DOWNLOAD_INTERVAL_HOURS": 6,
+    "SLEEP_SECONDS": 3600
+}
